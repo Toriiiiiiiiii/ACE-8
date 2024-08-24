@@ -1,0 +1,175 @@
+##########################
+# 8-Bit Fantasy Computer #
+# Design Specification   #
+##########################
+Last Updated: 20-08-2024
+
+TODO: Project Name
+TODO: Project Introduction
+
+INSTRUCTIONS
+------------
+Instructions consist of 1 byte, with an optional operand
+of up to 2 bytes. The basic layout of an instruction is
+as follows:
+
+    Bits 7-3: Opcode (opc)
+    Bits 2-0: Register Select (rs)
+
+Opcodes are sorted into four main categories:
+
+    Data Manipulation,
+    Arithmetic Operations,
+    Logical Operations,
+    Control Flow Operations
+
+Opcodes are grouped into these categories in their
+binary representation, which is as follows:
+
+    00000: NOP      -> N/A
+    
+    00001: LDI      -> RS = OPR
+    00010: LDA      -> RS = M[OPR]
+    00011: LDD      -> RS = M[M[OPR]]
+    00100: STA      -> M[OPR] = RS
+    00101: STD      -> M[M[OPR]] = RS
+    00110: PSH      -> STACK << RS
+    00111: POP      -> STACK >> RS
+    
+    01000: ADI      -> RS += OPR
+    01001: ADR      -> RS += R[OPR]
+    01010: SBI      -> RS -= OPR
+    01011: SBR      -> RS -= R[OPR]
+    01100: MLI      -> RS *= OPR
+    01101: MLR      -> RS *= R[OPR]
+    01110: DVI      -> RS /= OPR
+    01111: DVR      -> RS /= R[OPR]
+    10000: MDI      -> RS %= OPR
+    10001: MDR      -> RS %= R[OPR]
+
+    10010: ANI      -> RS &= OPR
+    10011: ANR      -> RS &= R[OPR]
+    10100: ORI      -> RS |= OPR
+    10101: ORR      -> RS |= R[OPR]
+    10110: NOT      -> RS = ~RS
+    10111: CPI      -> COMPARE RS, OPR
+    11000: CPR      -> COMPARE RS, R[OPR]
+
+    11001: JMP      -> PC = OPR
+    11010: JIZ      -> zero{PC = OPR}
+    11011: JNZ      -> !zero{PC = OPR}
+    11100: JIN      -> negative{PC = OPR}
+    11101: JIC      -> carry{PC = OPR}
+    11110: CLL      -> STACK << PC,  PC = OPR
+    11111: RET      -> STACK >> PC
+
+REGISTERS
+---------
+The processor has 8 accessible registers. The registers are 
+as follows:
+
+    000: A
+    001: B
+    010: C
+    011: D
+    100: E
+    101: F
+    110: G
+    111: H
+
+VIDEO
+-----
+The standard video output is a 32x32 tiled display with 8x8
+monochromatic tiles. The tilemap is stored in a 1024-byte
+section of contiguous memory. Each tile is represented by
+an 8-byte bitmap, with a maximum of 256 tiles. By default,
+an ASCII font is loaded into the tile data memory.
+Video memory starts at address 0x1000 and is a total of
+3264 bytes in size.
+
+    0x1000           -> Video Status Register
+    0x1001 .. 0x1401 -> Tilemap memory
+    0x1402 .. 0x1802 -> Tilemap colour memory
+    0x1803 .. 0x2003 -> Tile bitmap memory
+    0x2004 .. 0x2104 -> Sprite memory
+
+Tile Bitmaps
+------------
+A tile is an 8x8 monochrome bitmap. Each tile takes up 8
+bytes of memory in the Tile Bitmap section of memory.
+Each byte in the bitmap represents a row of the sprite,
+with each bit representing a single pixel. Tile bitmaps
+are referenced by the tilemap as well as by sprites.
+
+Sprites
+-------
+Sprites consist of 4 bytes. The machine supports 64 sprites,
+each containing a tilemap reference, an x and y position, and 
+a colour, each taking up one byte of memory. Sprites are layed out 
+one-after-the-other in the Sprite memory.
+
+Colour
+------
+A colour is a single byte in memory. The top nybble of the byte
+represents the foreground, and the bottom represents the 
+background colour.
+
+    0: Transparent 
+    1: Dark Blue
+    2: Dark Green
+    3: Dark Cyan
+    4: Dark Red
+    5: Dark Magenta
+    6: Dark Yellow
+    7: Dark Grey
+    8: Black
+    9: Blue
+    A: Green
+    B: Cyan
+    C: Red
+    D: Magenta
+    E: Yellow
+    F: White
+
+CONTROLLER
+----------
+The controller has 6 buttons: 
+
+    +----------------+
+    |   U            |
+    | L + R     A  B |
+    |   D            |
+    +----------------+
+
+In the emulator, the controls are mapped to the keyboard as:
+
+    A: Z 
+    B: X
+    U: Up Arrow
+    L: Left Arrow
+    R: Right Arrow
+    D: Down Arrow
+
+Controller status is stored at memory location 0x2105 in a 
+single byte. The status byte is as follows:
+
+    --XXXXXX
+      |||||+- A Button
+      ||||+-- B Button
+      |||+--- L Button
+      ||+---- R Button
+      |+----- U Button
+      +------ D Button
+
+SOUND
+-----
+The machine has 4 sound channels: Square Wave, Sawtooth Wave,
+Triangle Wave, and Noise channels. Each channel is controlled
+by 2 bytes in memory. The low byte controls the frequency, and
+the high byte controls the number of frames the sound should 
+play for.
+
+    0x2106 .. 0x2107 -> Square Wave Registers
+    0x2108 .. 0x2109 -> Sawtooth Wave Registers
+    0x210A .. 0x210B -> Triangle Wave Registers
+    0x210C .. 0x210D -> Noise Registers
