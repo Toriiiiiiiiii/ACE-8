@@ -18,7 +18,7 @@ has been a challenge that I have very much enjoyed undertaking.
 
 ## Specification
 
-1. [Processor](#processornorgmd)
-2. [Video](#videonorgmd)
-3. [Controller](#controllernorgmd)
-4. [Sound](#soundnorgmd)
+1. [Processor](processor.md)
+2. [Video](video.md)
+3. [Controller](controller.md)
+4. [Sound](sound.md)
