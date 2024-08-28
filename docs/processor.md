@@ -32,54 +32,62 @@ Opcodes are grouped into 5 categories:
 
 #### Uncategorised Instructions
 
-- 0b00000NOP (No Operand)      -> No Operation
+```
+- 0b00000: NOP (No Operand)      -> No Operation
+```
 
 
 #### Data Manipulation Instructions
-
-- 0b00001LDI (imm8)            -> Loads an immediate value into a register.
-- 0b00010LDA (abs16)           -> Directly loads a value from memory.
-- 0b00011LDD (ind16)           -> Indirectly loads a value from memory.
-- 0b00100STA (abs16)           -> Directly stores a value to memory.
-- 0b00101STD (ind16)           -> Indirectly stores a value to memory.
-- 0b00110PSH (impl)            -> Pushes the value of a register to the stack.
-- 0b00111POP (impl)            -> Pops a register value from the stack.
-
+```
+- 0b00001: LDI (imm8)            -> Loads an immediate value into a register.
+- 0b00010: LDA (abs16)           -> Directly loads a value from memory.
+- 0b00011: LDD (ind16)           -> Indirectly loads a value from memory.
+- 0b00100: STA (abs16)           -> Directly stores a value to memory.
+- 0b00101: STD (ind16)           -> Indirectly stores a value to memory.
+- 0b00110: PSH (impl)            -> Pushes the value of a register to the stack.
+- 0b00111: POP (impl)            -> Pops a register value from the stack.
+```
 
 #### Arithmetic Operation Instructions
 
-- 0b01000ADI (imm8)            -> Adds an immediate value to a register.
-- 0b01001ADR (reg8)            -> Adds a register's value to another register.
-- 0b01010SBI (imm8)            -> Subtracts an immediate value from a register.
-- 0b01011SBR (reg8)            -> Subtracts a register's value from another register.
-- 0b01100MLI (imm8)            -> Multiplies a register by an immediate value.
-- 0b01101MLR (reg8)            -> Multiplies a register by another register.
-- 0b01110DVI (imm8)            -> Divides a register by an immediate value.
-- 0b01111DVR (reg8)            -> Divides a register by another register.
-- 0b10000MDI (imm8)            -> Performs DVI and stores the remainder.
-- 0b10001MDR (reg8)            -> Performs DVR and stores the remainder.
+```
+- 0b01000: ADI (imm8)            -> Adds an immediate value to a register.
+- 0b01001: ADR (reg8)            -> Adds a register's value to another register.
+- 0b01010: SBI (imm8)            -> Subtracts an immediate value from a register.
+- 0b01011: SBR (reg8)            -> Subtracts a register's value from another register.
+- 0b01100: MLI (imm8)            -> Multiplies a register by an immediate value.
+- 0b01101: MLR (reg8)            -> Multiplies a register by another register.
+- 0b01110: DVI (imm8)            -> Divides a register by an immediate value.
+- 0b01111: DVR (reg8)            -> Divides a register by another register.
+- 0b10000: MDI (imm8)            -> Performs DVI and stores the remainder.
+- 0b10001: MDR (reg8)            -> Performs DVR and stores the remainder.
+```
 
 
 #### Logical Operation Instructions
 
-- 0b10010ANI (imm8)            -> ANDs a register with an immediate value.
-- 0b10011ANR (reg8)            -> ANDs a register with another register.
-- 0b10100ORI (imm8)            -> ORs a register with an immediate value.
-- 0b10101ORR (reg8)            -> ORs a register with another register.
-- 0b10110NOT (impl)            -> NOTs the value of a register.
-- 0b10111CPI (imm8)            -> Compares a register with an immediate value.
-- 0b11000CPR (reg8)            -> Compares the value of two registers.
+```
+- 0b10010: ANI (imm8)            -> ANDs a register with an immediate value.
+- 0b10011: ANR (reg8)            -> ANDs a register with another register.
+- 0b10100: ORI (imm8)            -> ORs a register with an immediate value.
+- 0b10101: ORR (reg8)            -> ORs a register with another register.
+- 0b10110: NOT (impl)            -> NOTs the value of a register.
+- 0b10111: CPI (imm8)            -> Compares a register with an immediate value.
+- 0b11000: CPR (reg8)            -> Compares the value of two registers.
+```
 
 
 #### Control Flow Operation Instructions
 
-- 0b11001JMP (abs16)           -> Jumps to an address.
-- 0b11010JIZ (abs16)           -> Jumps to an address if the zero flag is set.
-- 0b11011JNZ (abs16)           -> Jumps to an address if the zero flag is not set.
-- 0b11100JIN (abs16)           -> Jumps to an address if the negative flag is set.
-- 0b11101JIC (abs16)           -> Jumps to an address if the carry flag is set.
-- 0b11110CLL (abs16)           -> Puts the PC on the stack and jumps to an address.
-- 0b11111RET (impl)            -> Restores the PC from the stack.
+```
+- 0b11001: JMP (abs16)           -> Jumps to an address.
+- 0b11010: JIZ (abs16)           -> Jumps to an address if the zero flag is set.
+- 0b11011: JNZ (abs16)           -> Jumps to an address if the zero flag is not set.
+- 0b11100: JIN (abs16)           -> Jumps to an address if the negative flag is set.
+- 0b11101: JIC (abs16)           -> Jumps to an address if the carry flag is set.
+- 0b11110: CLL (abs16)           -> Puts the PC on the stack and jumps to an address.
+- 0b11111: RET (impl)            -> Restores the PC from the stack.
+```
 
 
 ## Registers
@@ -103,9 +111,11 @@ Inaccessible registers are used internally by the processor for control
 flow and logical instructions. Two of these registers are 16-bits in size,
 the other being a single byte. The registers are as follows:
 
+```
 - Program Counter (PC) -> 16-bit
 - Stack Pointer (SP)   -> 16-bit
 - Flag Register (FL)   -> 8-bit
+```
 
 
 #### Flag Register
@@ -113,6 +123,9 @@ the other being a single byte. The registers are as follows:
 The flag register is 8-bits in size. However, in the current iteration
 of the processor, only the lowest 3 bits of the register are used. The
 register is layed out as follows:
-- Bit 0Zero Flag
-- Bit 1Negative Flag
-- Bit 2Carry Flag
+```
+
+- Bit 0: Zero Flag
+- Bit 1: Negative Flag
+- Bit 2: Carry Flag
+```

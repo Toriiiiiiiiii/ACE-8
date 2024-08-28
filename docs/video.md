@@ -55,6 +55,7 @@ in the assembler. For example:
 
 #### Assembler Data:
 
+```
 0b00000000
 0b01100000
 0b00110000
@@ -63,10 +64,12 @@ in the assembler. For example:
 0b00110000
 0b01100000
 0b00000000
+```
 
 
 #### Rendered Sprite:
 
+```
 ........
 .....##.
 ....##..
@@ -75,6 +78,7 @@ in the assembler. For example:
 ....##..
 .....##.
 ........
+```
 
 
 ### Sprite Memory - 0x2004 to 0x2104
@@ -105,6 +109,7 @@ colour, and the least significant four bits represent the background.
 
 ### Colour Pallete
 
+```
 - 0x0: Transparent
 - 0x1: Dark Blue
 - 0x2: Dark Green
@@ -121,3 +126,4 @@ colour, and the least significant four bits represent the background.
 - 0xD: Magenta
 - 0xE: Yellow
 - 0xF: White
+```

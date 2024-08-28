@@ -17,9 +17,11 @@ The controller status register is located at address 0x2105 in memory,
 and is updated 30 times a second. The top 2 bits in the register are
 unused. The register is as follows:
 
-- Bit 0A Button
-- Bit 1B Button
-- Bit 2L Button
-- Bit 3R Button
-- Bit 4U Button
-- Bit 5D Button
+```
+- Bit 0: A Button
+- Bit 1: B Button
+- Bit 2: L Button
+- Bit 3: R Button
+- Bit 4: U Button
+- Bit 5: D Button
+```

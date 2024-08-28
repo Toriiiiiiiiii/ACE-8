@@ -16,10 +16,12 @@ entirely by the CPU.
 ## Sound Memory
 
 Sound memory is layed out as follows:
+```
 - 0x2106 .. 0x2107 -> Square Wave Registers
 - 0x2108 .. 0x2109 -> Sawtooth Wave Registers
 - 0x210A .. 0x210B -> Triangle Wave Registers
 - 0x210C .. 0x210D -> Noise Registers
+```
 
 
 ## Sound Generation
