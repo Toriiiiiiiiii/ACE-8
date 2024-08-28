@@ -5,7 +5,6 @@
 #define FL_ZERO  0b00000001
 #define FL_NEG   0b00000010
 #define FL_CARRY 0b00000100
-#define FL_HALT  0b00001000
 
 void cpuSetFlag(cpu_t *cpu, u8 flag, u8 value) {
     cpu->fl &= ~flag;
@@ -23,6 +22,7 @@ u8 cpuGetFlag(cpu_t *cpu, u8 flag) {
 // If you are reading this, I'm sorry.
 void cpuExec(cpu_t *cpu) {
     inst_t i = instructionFromByte( memReadByte(cpu->pc) );
+    cpu->ir = (i.opcode << 3) + i.rs;
     cpu->pc++;
 
     if(i.opcode == NOP) return;
@@ -56,9 +56,9 @@ void cpuExec(cpu_t *cpu) {
         cpu->pc += 2;
     } else if(i.opcode == PSH) {
         cpu->sp--;
-        memWriteByte( cpu->sp, cpu->regs[i.rs] );
+        memWriteByte( STACK_BASE + cpu->sp, cpu->regs[i.rs] );
     } else if(i.opcode == POP) {
-        cpu->regs[i.rs] = memReadByte(cpu->sp);
+        cpu->regs[i.rs] = memReadByte(STACK_BASE + cpu->sp);
         cpu->sp++;
 
         cpuSetFlag(cpu, FL_ZERO, cpu->regs[i.rs] == 0);
@@ -255,10 +255,10 @@ void cpuExec(cpu_t *cpu) {
         cpu->pc += 2;
 
         cpu->sp -= 2;
-        memWriteWord(cpu->sp, cpu->pc);
+        memWriteWord(STACK_BASE + cpu->sp, cpu->pc);
         cpu->pc = addr;
     } else if(i.opcode == RET) {
-        cpu->pc = memReadWord(cpu->sp);
+        cpu->pc = memReadWord(STACK_BASE + cpu->sp);
         cpu->sp += 2;
     } 
 }

@@ -12,7 +12,7 @@ opcodes = {'nop': '0',  'ldi': '1',  'lda': '2',  'ldd': '3',  'sta': '4',
 
 regs = {'a': '0', 'b': '1', 'c': '2', 'd': '3', 'e': '4', 'f': '5', 'g': '6', 'h': 7}
 
-lines, lineinfo, lineadr, labels = [], [], [], {}
+lines, lineinfo, lineadr, labels, definitions = [], [], [], {}, {}
 LINEINFO_NONE, LINEINFO_ORG = 0x00000, 0x10000
 LINEINFO_BEGIN, LINEINFO_END = 0x20000, 0x40000
 
@@ -36,10 +36,36 @@ def importAll():
 
             importAll()
 
+        if lines[i].startswith("%incbin"):
+            dirname = os.path.dirname(sys.argv[1])
+
+            filename = dirname + "/" + lines[i][8:].lstrip('"').lstrip("'").rstrip('"').rstrip("'")
+            with open(filename, "rb") as f:
+                lines = lines[:i] + [str(b) for b in f.read()] + lines[i+1:]
+
+
+def defineAll():
+    global lines
+    global definitions
+
+    for i in range(len(lines)-1, -1, -1):
+        if lines[i].startswith("%define"):
+            args = lines[i].split()[1:]
+
+            if len(args) < 2:
+                print(f"ERROR IN LINE {i}: Expected value in macro definition.")
+                exit(1)
+
+            definitions[args[0]] = " ".join(args[1:])
+            lines.pop(i)
+
 # PASS 0: File Imports
+print("PASS 0 - File Imports & Definitions")
 importAll()
+defineAll()
 
 # PASS 1: Per-Line Replacements
+print("PASS 1 - Per-Line Replacements")
 for i in range(len(lines)):
     while lines[i].find("'") != -1:
         k = lines[i].find("'")
@@ -101,6 +127,10 @@ for i in range(len(lines)):
             lines[i][j] = regs[lines[i][j]]
         except: pass
 
+        try:
+            definitions[lines[i][j]]
+            lines[i][j] = definitions[lines[i][j]]
+        except: pass
         try: 
             lines[i][j] = str((int(opcodes[lines[i][j].lower()]) << 3) + int(lines[i][j+1], 0))
             lines[i].pop(j+1)
@@ -113,6 +143,7 @@ for i in range(len(lines)):
                     lines[i].insert(j+1, str((val >> 8) & 0xff))
 
 # PASS 2: STARTING ADDRESS
+print("PASS 2 - Line Addressing & Label Replacement")
 adr = 0
 for i in range(len(lines)):
     for j in range(len(lines[i])-1, -1, -1):
@@ -131,6 +162,7 @@ for i in range(len(lines)):
 for l in labels: labels[l] = lineadr[labels[l]]
 
 # PASS 3: REPLACE REFERENCES TO MEMORY ADDRESSES
+print("PASS 3 - Label Reference Replacements")
 for i in range(len(lines)):
     for j in range(len(lines[i])):
         e = lines[i][j]
@@ -167,33 +199,16 @@ for i in range(len(lines)):
 
 print("Assembly complete!\n")
 
-print("Symbols:")
-print("--------")
-
-longest = 0
-for label in labels:
-    if len(label) > longest:
-        longest = len(label)
-
-for label in labels:
-    print(f"{label.ljust(longest, ' ')}   0x%04.4x" % labels[label])
-
-print("\nMachine Code:")
-print("-------------")
-
-for i in range(len(lines)):
-    if len(lines[i]) == 0: continue
-    s = ('%04.4x' % lineadr[i]) + ": "
-    for e in lines[i]: s += ('%02x' % (int(e, 0) & 0xff)) + " "
-    print(s)
-
 # Write output file
 outPath = input("Output file > ")
 
-program = []
+program = [0] * 65536
 for i in range(len(lines)):
+    adr = lineadr[i]
     for e in lines[i]: 
-        program.append(int(e, 0))
+        program[adr] = int(e, 0)
+        adr += 1
 
+while not program[-1]: program.pop()
 with open(outPath, "wb") as f:
     f.write(bytearray(program))

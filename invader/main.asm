@@ -1,153 +1,154 @@
-entry:
-    cll setup_textmode
+    ; Memory locations for left sprite
+    %define PADDLE_LEFT_SPR 0x2004
+    %define PADDLE_LEFT_X   0x2005
+    %define PADDLE_LEFT_Y   0x2006
+    %define PADDLE_LEFT_COL 0x2007
+
+    ; Memory locations for right sprite
+    %define PADDLE_RIGHT_SPR 0x2008
+    %define PADDLE_RIGHT_X   0x2009
+    %define PADDLE_RIGHT_Y   0x200A
+    %define PADDLE_RIGHT_COL 0x200B
+
+    %define MISSILE_SPR 0x200C
+    %define MISSILE_X   0x200D
+    %define MISSILE_Y   0x200E
+    %define MISSILE_COL 0x200F
+
+    %define PADDLE_MOVE_SPEED 4
+    %define MISSILE_SPEED 12
+
+_entry:
     cll reset_sprites
+    ldi a, 0xe0
+    sta a, MISSILE_COL
 
-    ldi e, 0
-_load_paddlesprl_lp:
-    ldd a, _paddlesprl_addr
-    std a, _paddlesprl_vmem_addr
-
-
-    lda a, _paddlesprl_vmem_addr
-    lda b, _paddlesprl_vmem_addr+1
-    ldi c, 1
-    ldi d, 0
-    cll add16
-
-    sta a, _paddlesprl_vmem_addr
-    sta b, _paddlesprl_vmem_addr+1
-
-    lda a, _paddlesprl_addr
-    lda b, _paddlesprl_addr+1
-    cll add16
-
-    sta a, _paddlesprl_addr
-    sta b, _paddlesprl_addr+1
-
-    adi e, 1
-    cpi e, 8
-    jiz _load_paddlesprl_dn
-    jmp _load_paddlesprl_lp
-
-_load_paddlesprl_dn:
-    ldi e, 0
-_load_paddlesprr_lp:
-    ldd a, _paddlesprr_addr
-    std a, _paddlesprr_vmem_addr
-
-    lda a, _paddlesprr_vmem_addr
-    lda b, _paddlesprr_vmem_addr+1
-    ldi c, 1
-    ldi d, 0
-    cll add16
-
-    sta a, _paddlesprr_vmem_addr
-    sta b, _paddlesprr_vmem_addr+1
-
-    lda a, _paddlesprr_addr
-    lda b, _paddlesprr_addr+1
-    cll add16
-
-    sta a, _paddlesprr_addr
-    sta b, _paddlesprr_addr+1
-
-    adi e, 1
-    cpi e, 8
-    jiz _load_paddlesprr_dn
-    jmp _load_paddlesprr_lp
-
-_load_paddlesprr_dn:
+setup_paddle:
+_setup_left:
     ldi a, 1
-    sta a, 0x2004
+    sta a, PADDLE_LEFT_SPR 
 
-    ldi a, 2
-    sta a, 0x2008
-
-    ldi a, 127
-    std a, _paddle_x
-
-    adi a, 8
-    std a, _paddle_spr2_x
+    ldi a, 124
+    sta a, PADDLE_LEFT_X
 
     ldi a, 240
-    std a, _paddle_y
-    std a, _paddle_spr2_y
+    sta a, PADDLE_LEFT_Y
 
     ldi a, 0xa0
-    sta a, 0x2007
-    sta a, 0x200B
+    sta a, PADDLE_LEFT_COL
 
-    ldi a, <str
-    ldi b, >str
-    cll print
+_setup_right:
+    ldi a, 2
+    sta a, PADDLE_RIGHT_SPR 
 
-;;;;; Frame Rendering Logic ;;;;;
-_FRAME:
+    ldi a, 132
+    sta a, PADDLE_RIGHT_X
+
+    ldi a, 240
+    sta a, PADDLE_RIGHT_Y
+
+    ldi a, 0xa0
+    sta a, PADDLE_RIGHT_COL
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ; PER-FRAME LOGIC - GAME LOOP &  ;
+    ; RENDERING                      ;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+_frame:
+    ; Wait for frame to finish drawing
+    ; to avoid overwriting video memory
+    ; during drawing. Not doing this can
+    ; result in ugly artifacts on screen.
     cll waitblank
+    
+_check_controller:
+    lda a, 0x2105
+    jiz _controller_done
 
-_CONTROLS:
-    lda a, 0x2105 
-    jiz _CONTROLS_DONE
-
-_CHK_LEFTBUTTON:
     psh a
+_check_l:
     ani a, 0b00000100
-    jiz _CHK_RIGHTBUTTON
+    jiz _check_r
 
-    ldd a, _paddle_x
-    sbi a, 4
-    std a, _paddle_x
+    lda a, PADDLE_LEFT_X
+    jiz _check_r
 
-_CHK_RIGHTBUTTON:
+    lda a, PADDLE_LEFT_X
+    sbi a, PADDLE_MOVE_SPEED
+    sta a, PADDLE_LEFT_X
+
+    lda a, PADDLE_RIGHT_X
+    sbi a, PADDLE_MOVE_SPEED
+    sta a, PADDLE_RIGHT_X
+
+_check_r:
     pop a
+    psh a
     ani a, 0b00001000
-    jiz _CONTROLS_DONE
+    jiz _check_fire
 
-    ldd a, _paddle_x
+    lda a, PADDLE_LEFT_X
+    cpi a, 240
+    jiz _check_fire
+
+    lda a, PADDLE_LEFT_X
+    adi a, PADDLE_MOVE_SPEED
+    sta a, PADDLE_LEFT_X
+
+    lda a, PADDLE_RIGHT_X
+    adi a, PADDLE_MOVE_SPEED
+    sta a, PADDLE_RIGHT_X
+
+_check_fire:
+    lda a, MISSILE_SPR
+    jnz _controller_done
+
+    pop a
+    psh a
+    ani a, 0b00000001
+    jiz _controller_done
+
+    lda a, PADDLE_LEFT_X
     adi a, 4
-    std a, _paddle_x
+    sta a, MISSILE_X
 
-_CONTROLS_DONE:
+    lda a, PADDLE_LEFT_Y
+    sbi a, 4
+    sta a, MISSILE_Y
 
-    ldd a, _paddle_x
-    adi a, 8
-    std a, _paddle_spr2_x
+    ldi a, 3
+    sta a, MISSILE_SPR
+    jmp _move_done
 
-    jmp _FRAME
+_controller_done:
+    pop a
 
-str:
-    "Hello, World!", 0x0a, "This is a test.", 0x00
+_move_missile:
+    lda a, MISSILE_SPR
+    jiz _move_done
 
-_paddle_x: 0x2005
-_paddle_y: 0x2006
+    lda a, MISSILE_Y
+    sbi a, MISSILE_SPEED
+    sta a, MISSILE_Y
 
-_paddle_spr2_x: 0x2009
-_paddle_spr2_y: 0x200A
+    lda a, MISSILE_Y
+    cpi a, 232
+    jin _move_done
 
-_paddlesprl_vmem_addr: 0x180B 
-_paddlesprl_addr: _paddle_spr_l
+    ldi a, 0
+    sta a, MISSILE_SPR
 
-_paddlesprr_vmem_addr: 0x1813
-_paddlesprr_addr: _paddle_spr_r
+_move_done:
+    ; Wait for next frame to draw to avoid
+    ; updating multiple times a frame
+    cll waitdraw
+    jmp _frame
 
-_paddle_spr_r:
-    0b00000000
-    0b00000000
-    0b00000001
-    0b00000001
-    0b00111111
-    0b01111111
-    0b11111111
-    0b11111111
+    %import "screen.asm"
+    %import "background.asm"
 
-_paddle_spr_l:
-    0b00000000
-    0b00000000
-    0b10000000
-    0b10000000
-    0b11111100
-    0b11111110
-    0b11111111
-    0b11111111
-
-%import "screen.asm"
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ; BITMAP DATA                    ;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    %org 0x1803
+    %incbin "graphics"

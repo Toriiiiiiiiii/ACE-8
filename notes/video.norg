@@ -4,7 +4,7 @@ description:
 authors: tori
 categories: 
 created: 2024-08-25T15:12:45+0100
-updated: 2024-08-25T15:53:48+0100
+updated: 2024-08-28T10:36:48+0100
 version: 1.1.1
 @end
 
@@ -70,9 +70,9 @@ version: 1.1.1
     Sprites are 8x8 bitmap images that are not limited to the tilemap grid.
     The ACE-8 supports up to 64 hardware sprites, each using 4 bytes of memory
     in this block. A sprite consists of the following:
+    - Bitmap Index
     - X Position
     - Y Position
-    - Bitmap Index
     - Colour
 
     The Bitmap Index byte corresponds to a bitmap in Tile Bitmap Memory, which

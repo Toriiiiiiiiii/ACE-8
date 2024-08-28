@@ -12,10 +12,12 @@
 #define REG_G 6
 #define REG_H 7
 
+#define STACK_BASE 0xff00
+
 struct _cpu_t {
     u8 regs[8];
-    u8 fl;
-    u16 pc, sp;
+    u8 fl, ir, sp;
+    u16 pc;
 };
 
 typedef struct _cpu_t cpu_t;

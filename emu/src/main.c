@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <signal.h>
+#include <stdlib.h>
 #include <sys/time.h>
 #include <pthread.h>
 #include <raylib.h>
@@ -6,7 +8,6 @@
 #include "cpu.h"
 #include "font.h"
 
-#define CLK_SPEED 1000000 // 1MHz
 #define VIDMEM_SIZE 1024
 #define VIDMEM_BASE 0x1001
 #define CTABLE_BASE VIDMEM_BASE + VIDMEM_SIZE + 1
@@ -23,6 +24,8 @@
 #define CONT_U 0b00010000
 #define CONT_D 0b00100000
 #define CONT_ADDR 0x2105
+
+cpu_t cpu = {0};
 
 static int isRunning = 1;
 static Color cols[16] = {
@@ -43,6 +46,24 @@ static Color cols[16] = {
     { 255, 255,   0, 255},
     { 255, 255, 255, 255},
 };
+
+void signalHandler(int sig) {
+    printf("Exception Occured!\n"); 
+    printf("CPU STATUS\n");
+    printf("----------\n");
+
+    printf("  PC: %04x\n", cpu.pc);
+    printf("  SP: %04x\n", cpu.sp);
+    printf("  FL: %02x\n", cpu.fl);
+    printf("  IR: %02x (%02x, %x)\n", cpu.ir, (cpu.ir >> 3)&0b11111, (cpu.ir&0b11));
+    printf("  REGS:\n");
+
+    for(int i = 0; i < 8; ++i) {
+        printf("    %02x\n", cpu.regs[i]);
+    }
+
+    exit(-1);
+}
 
 void drawCharacter(u8 t, unsigned int x, unsigned int y, u8 c) {
     if(t == 0) return;
@@ -69,12 +90,11 @@ void loadFont() {
 void *displayThread(void *vargp) {
     InitWindow(512, 512, "Video Output");
     SetTargetFPS(30);
-    loadFont();
 
     while(isRunning && !WindowShouldClose()) {
         BeginDrawing();
-        ClearBackground(BLACK);
         memWriteByte(0x1000, 0);
+        ClearBackground(BLACK);
 
         unsigned int width = 32;
         unsigned int height = 32;
@@ -144,25 +164,30 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    fseek(f, 0, SEEK_END);
+    size_t size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    loadFont();
     u8 mBuffer[65536] = {0};
-    fread(mBuffer, 1, 65536, f);
-    for(int i = 0; i < 65536; ++i) {
+    fread(mBuffer, 1, size, f);
+    for(int i = 0; i < size; ++i) {
         memWriteByte(i, mBuffer[i]);
     }
 
-    long start, nextTick;
-    cpu_t cpu = {0};
-    cpu.sp = 0xffff;
+    cpu.sp = 0xff;
+
+    struct sigaction sigact;
+    sigact.sa_handler = signalHandler;
+    sigemptyset(&sigact.sa_mask);
+    sigact.sa_flags = 0;
+    sigaction(SIGFPE, &sigact, (struct sigaction *)NULL);
 
     pthread_t renderthread_id;
     pthread_create(&renderthread_id, NULL, displayThread, NULL);
 
     while(isRunning) {
-        start = currentUS();
-        nextTick = start + 1000000/CLK_SPEED;
         cpuExec(&cpu);
-
-        while(currentUS() < nextTick) {}
     }
 
     pthread_join(renderthread_id, NULL);
