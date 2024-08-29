@@ -204,16 +204,16 @@ void cpuExec(cpu_t *cpu) {
         cpuSetFlag(cpu, FL_ZERO, result == 0);
         cpuSetFlag(cpu, FL_NEG, result * 0b10000000);
     } else if(i.opcode == CPI) {
-        u8 a = cpu->regs[i.rs];
-        u8 b = memReadByte(cpu->pc);
+        int a = cpu->regs[i.rs];
+        int b = memReadByte(cpu->pc);
         cpu->pc++;
 
         cpuSetFlag(cpu, FL_ZERO, a == b);
         cpuSetFlag(cpu, FL_NEG, a < b);
         cpuSetFlag(cpu, FL_CARRY, a > b);
     } else if(i.opcode == CPR) {
-        u8 a = cpu->regs[i.rs];
-        u8 b = cpu->regs[ memReadByte(cpu->pc) ];
+        int a = cpu->regs[i.rs];
+        int b = cpu->regs[ memReadByte(cpu->pc) ];
         cpu->pc++;
 
         cpuSetFlag(cpu, FL_ZERO, a == b);

@@ -1,7 +1,7 @@
 CC = gcc
 
 CCFLAGS = -g -c -Wall
-LDFLAGS = -lm -lraylib
+LDFLAGS = -L/usr/local/lib -lm -lraylib
 
 SRC = $(wildcard src/*.c)
 OBJ = $(SRC:src/%.c=bin/obj/%.o)

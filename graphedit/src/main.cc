@@ -9,24 +9,44 @@ typedef unsigned char u8;
 unsigned char data[8 * 256] = {0};
 unsigned char selectedGraphic = 0;
 
-void drawCharacter(u8 t, unsigned int x, unsigned int y, Color c) {
+static Color cols[16] = {
+    {   0,   0,   0, 255},
+    {   0,   0, 127, 255},
+    {   0, 127,   0, 255},
+    {   0, 127, 127, 255},
+    { 127,   0,   0, 255},
+    { 127,   0, 127, 255},
+    { 127, 127,   0, 255},
+    { 127, 127, 127, 255},
+    {   0,   0,   0, 255},
+    {   0,   0, 255, 255},
+    {   0, 255,   0, 255},
+    {   0, 255, 255, 255},
+    { 255,   0,   0, 255},
+    { 255,   0, 255, 255},
+    { 255, 255,   0, 255},
+    { 255, 255, 255, 255},
+};
+
+void drawCharacter(u8 t, unsigned int x, unsigned int y, unsigned char c) {
     if(t == 0) return;
     for(int i = 0; i < 8; ++i) {
         for(int n = 0; n < 8; ++n) {
             u8 row = data[(t * 8) + i];
             u8 pix = (row >> n) & 1;
-            if(pix) DrawRectangle((x+n)*2, (y+i)*2, 2, 2, c);
+            if(pix) DrawRectangle((x+n)*2, (y+i)*2, 2, 2, cols[c&0xf]);
         }
     }
 }
 
+int selectedCol = 15;
 void drawEditPane() {
     DrawRectangleLines(272, 8, 176, 176, WHITE);
     for(int i = 0; i < 8; ++i) {
         for(int n = 0; n < 8; ++n) {
             u8 row = data[(selectedGraphic * 8) + i];
             u8 pix = (row >> n) & 1;
-            if(pix) DrawRectangle(280 + (n)*20, 16 + (i)*20, 20, 20, WHITE);
+            if(pix) DrawRectangle(280 + (n)*20, 16 + (i)*20, 20, 20, cols[selectedCol]);
         }
     }
 
@@ -48,6 +68,7 @@ void loadFont() {
         }
     }
 }
+
 void handleInput() {
     if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         Vector2 pos = GetMousePosition();
@@ -56,6 +77,12 @@ void handleInput() {
             u8 yindex = (int)pos.y / 16;
 
             selectedGraphic = yindex * 16 + xindex;
+        }
+
+        if((pos.x >= 272) && (pos.x < 272+(7*16)) && (pos.y >= 208 && pos.y < 240)) {
+            u8 modifier = (pos.y - 208)/16;
+            u8 index = (pos.x - 272)/16;
+            selectedCol = (index+1)+(8*modifier);
         }
     }
 
@@ -157,17 +184,24 @@ int main() {
 
         for(int i = 0; i < 256; ++i) {
             if(i == selectedGraphic) {
-                drawCharacter(i, (i%16)*8, (i/16)*8, WHITE);
+                drawCharacter(i, (i%16)*8, (i/16)*8, selectedCol);
                 DrawRectangleLines((i%16)*16, (i/16)*16, 16, 16, WHITE);
             }
-            else drawCharacter(i, (i%16)*8, (i/16)*8, GRAY);
+            else drawCharacter(i, (i%16)*8, (i/16)*8, selectedCol);
         }
 
         DrawLine(264, 0, 264, 255, WHITE);
         DrawRectangle(0, 256, 456, 16, DARKGRAY);
 
-        drawTxt("GraphEd v1.0", 272, 192, WHITE);
-        drawTxt("Created by Tori Hall", 272, 208, WHITE);
+        drawTxt("Foreground Colour:", 272, 192, WHITE);
+
+        int x = 272;
+        int y = 208;
+
+        for(int i = 1; i < 8; ++i) {
+            DrawRectangle(x+16*(i-1), y, 16, 16, cols[i]);
+            DrawRectangle(x+16*(i-1), y+16, 16, 16, cols[i+8]);
+        }
 
         if(!command.empty()) {
             drawTxt(command.c_str(), 0, 256, WHITE);
