@@ -186,7 +186,10 @@ _inv_move_right:
     lda a, INVADER_LEFT_X
     lda b, invader_speed
     adr a, b
+
+	adi a, 16
     jic _invader_moveln
+	sbi a, 16
 
     sta a, INVADER_LEFT_X
     adi a, 8
@@ -213,21 +216,28 @@ _inv_dirchk_done:
 
     lda a, INVADER_LEFT_Y
     dvi a, 8
-    mdi a, 2
-    jiz _invader_boundchk_done
+    mdi a, 3
+    jnz _invader_boundchk_done
 
     lda a, invader_speed
     adi a, 1
     sta a, invader_speed
 
 _invader_boundchk_done:
+    lda a, INVADER_LEFT_Y
+    cpi a, 230
+    jic _hlt
+
     ; Wait for next frame to draw to avoid
     ; updating multiple times a frame
     cll waitdraw
     jmp _frame
 
+_hlt:
+	jmp _hlt
+
 invader_speed: 0x02
-invader_direction: 0x01
+invader_direction: 0x00
 
     %import "screen.asm"
     %import "background.asm"

@@ -69,65 +69,65 @@ void cpuExec(cpu_t *cpu) {
     // BEGIN ARITHMETIC INSTRUCTIONS //
     ///////////////////////////////////
     else if(i.opcode == ADI) {
-        u8 before = cpu->regs[i.rs];
-        u8 result = cpu->regs[i.rs] + memReadByte(cpu->pc);
+        u16 before = cpu->regs[i.rs];
+        u16 result = before + memReadByte(cpu->pc);
         cpu->pc++;
 
         cpu->regs[i.rs] = result;
 
         cpuSetFlag(cpu, FL_ZERO, result == 0);
-        cpuSetFlag(cpu, FL_NEG, result * 0b10000000);
-        cpuSetFlag(cpu, FL_CARRY, result < before);
+        cpuSetFlag(cpu, FL_NEG, result & 0b10000000);
+        cpuSetFlag(cpu, FL_CARRY, result > 255);
     } else if(i.opcode == ADR) {
-        u8 before = cpu->regs[i.rs];
-        u8 result = cpu->regs[i.rs] + cpu->regs[ memReadByte(cpu->pc) ];
+        u16 before = cpu->regs[i.rs];
+        u16 result = before + cpu->regs[ memReadByte(cpu->pc) ];
         cpu->pc++;
 
         cpu->regs[i.rs] = result;
 
         cpuSetFlag(cpu, FL_ZERO, result == 0);
-        cpuSetFlag(cpu, FL_NEG, result * 0b10000000);
-        cpuSetFlag(cpu, FL_CARRY, result < before);
+        cpuSetFlag(cpu, FL_NEG, result & 0b10000000);
+        cpuSetFlag(cpu, FL_CARRY, result > 255);
     } else if(i.opcode == SBI) {
-        u8 before = cpu->regs[i.rs];
-        u8 result = cpu->regs[i.rs] - memReadByte(cpu->pc);
+        u16 before = cpu->regs[i.rs];
+        u16 result = before - memReadByte(cpu->pc);
         cpu->pc++;
 
         cpu->regs[i.rs] = result;
 
         cpuSetFlag(cpu, FL_ZERO, result == 0);
-        cpuSetFlag(cpu, FL_NEG, result * 0b10000000);
-        cpuSetFlag(cpu, FL_CARRY, result > before);
+        cpuSetFlag(cpu, FL_NEG, result & 0b10000000);
+        cpuSetFlag(cpu, FL_CARRY, result > 255);
     } else if(i.opcode == SBR) {
-        u8 before = cpu->regs[i.rs];
-        u8 result = cpu->regs[i.rs] - cpu->regs[ memReadByte(cpu->pc) ];
+        u16 before = cpu->regs[i.rs];
+        u16 result = before - cpu->regs[ memReadByte(cpu->pc) ];
         cpu->pc++;
 
         cpu->regs[i.rs] = result;
 
         cpuSetFlag(cpu, FL_ZERO, result == 0);
-        cpuSetFlag(cpu, FL_NEG, result * 0b10000000);
-        cpuSetFlag(cpu, FL_CARRY, result > before);
+        cpuSetFlag(cpu, FL_NEG, result & 0b10000000);
+        cpuSetFlag(cpu, FL_CARRY, result > 255);
     } else if(i.opcode == MLI) {
-        u8 before = cpu->regs[i.rs];
-        u8 result = cpu->regs[i.rs] * memReadByte(cpu->pc);
+        u16 before = cpu->regs[i.rs];
+        u16 result = before * memReadByte(cpu->pc);
         cpu->pc++;
 
         cpu->regs[i.rs] = result;
 
         cpuSetFlag(cpu, FL_ZERO, result == 0);
-        cpuSetFlag(cpu, FL_NEG, result * 0b10000000);
-        cpuSetFlag(cpu, FL_CARRY, result < before);
+        cpuSetFlag(cpu, FL_NEG, result & 0b10000000);
+        cpuSetFlag(cpu, FL_CARRY, result > 255);
     } else if(i.opcode == MLR) {
         u8 before = cpu->regs[i.rs];
-        u8 result = cpu->regs[i.rs] * cpu->regs[ memReadByte(cpu->pc) ];
+        u8 result = before * cpu->regs[ memReadByte(cpu->pc) ];
         cpu->pc++;
 
         cpu->regs[i.rs] = result;
 
         cpuSetFlag(cpu, FL_ZERO, result == 0);
-        cpuSetFlag(cpu, FL_NEG, result * 0b10000000);
-        cpuSetFlag(cpu, FL_CARRY, result < before);
+        cpuSetFlag(cpu, FL_NEG, result & 0b10000000);
+        cpuSetFlag(cpu, FL_CARRY, result > 255);
     } else if(i.opcode == DVI) {
         u8 result = cpu->regs[i.rs] / memReadByte(cpu->pc);
         cpu->pc++;
@@ -135,7 +135,7 @@ void cpuExec(cpu_t *cpu) {
         cpu->regs[i.rs] = result;
 
         cpuSetFlag(cpu, FL_ZERO, result == 0);
-        cpuSetFlag(cpu, FL_NEG, result * 0b10000000);
+        cpuSetFlag(cpu, FL_NEG, result & 0b10000000);
     } else if(i.opcode == DVR) {
         u8 result = cpu->regs[i.rs] - cpu->regs[ memReadByte(cpu->pc) ];
         cpu->pc++;
@@ -151,7 +151,7 @@ void cpuExec(cpu_t *cpu) {
         cpu->regs[i.rs] = result;
 
         cpuSetFlag(cpu, FL_ZERO, result == 0);
-        cpuSetFlag(cpu, FL_NEG, result * 0b10000000);
+        cpuSetFlag(cpu, FL_NEG, result & 0b10000000);
     } else if(i.opcode == MDR) {
         u8 result = cpu->regs[i.rs] % cpu->regs[ memReadByte(cpu->pc) ];
         cpu->pc++;
@@ -159,7 +159,7 @@ void cpuExec(cpu_t *cpu) {
         cpu->regs[i.rs] = result;
 
         cpuSetFlag(cpu, FL_ZERO, result == 0);
-        cpuSetFlag(cpu, FL_NEG, result * 0b10000000);
+        cpuSetFlag(cpu, FL_NEG, result & 0b10000000);
     }
     
     ////////////////////////////////
@@ -172,7 +172,7 @@ void cpuExec(cpu_t *cpu) {
         cpu->regs[i.rs] = result;
 
         cpuSetFlag(cpu, FL_ZERO, result == 0);
-        cpuSetFlag(cpu, FL_NEG, result * 0b10000000);
+        cpuSetFlag(cpu, FL_NEG, result & 0b10000000);
     } else if(i.opcode == ANR) {
         u8 result = cpu->regs[i.rs] & cpu->regs[ memReadByte(cpu->pc) ];
         cpu->pc++;
@@ -180,7 +180,7 @@ void cpuExec(cpu_t *cpu) {
         cpu->regs[i.rs] = result;
 
         cpuSetFlag(cpu, FL_ZERO, result == 0);
-        cpuSetFlag(cpu, FL_NEG, result * 0b10000000);
+        cpuSetFlag(cpu, FL_NEG, result & 0b10000000);
     } else if(i.opcode == ORI) {
         u8 result = cpu->regs[i.rs] | memReadByte(cpu->pc);
         cpu->pc++;
@@ -188,7 +188,7 @@ void cpuExec(cpu_t *cpu) {
         cpu->regs[i.rs] = result;
 
         cpuSetFlag(cpu, FL_ZERO, result == 0);
-        cpuSetFlag(cpu, FL_NEG, result * 0b10000000);
+        cpuSetFlag(cpu, FL_NEG, result & 0b10000000);
     } else if(i.opcode == ORR) {
         u8 result = cpu->regs[i.rs] | cpu->regs[ memReadByte(cpu->pc) ];
         cpu->pc++;
@@ -196,13 +196,13 @@ void cpuExec(cpu_t *cpu) {
         cpu->regs[i.rs] = result;
 
         cpuSetFlag(cpu, FL_ZERO, result == 0);
-        cpuSetFlag(cpu, FL_NEG, result * 0b10000000);
+        cpuSetFlag(cpu, FL_NEG, result & 0b10000000);
     } else if(i.opcode == NOT) {
         u8 result = ~cpu->regs[i.rs];
         cpu->regs[i.rs] = result;
 
         cpuSetFlag(cpu, FL_ZERO, result == 0);
-        cpuSetFlag(cpu, FL_NEG, result * 0b10000000);
+        cpuSetFlag(cpu, FL_NEG, result & 0b10000000);
     } else if(i.opcode == CPI) {
         int a = cpu->regs[i.rs];
         int b = memReadByte(cpu->pc);
@@ -248,7 +248,7 @@ void cpuExec(cpu_t *cpu) {
         u16 addr = memReadWord(cpu->pc);
         cpu->pc += 2;
 
-        if(cpuGetFlag(cpu, FL_ZERO))
+        if(cpuGetFlag(cpu, FL_CARRY))
             cpu->pc = addr;
     } else if(i.opcode == CLL) {
         u16 addr = memReadWord(cpu->pc);

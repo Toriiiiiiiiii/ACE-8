@@ -66,7 +66,7 @@ void signalHandler(int sig) {
 }
 
 void drawCharacter(u8 t, unsigned int x, unsigned int y, u8 c) {
-    if(t == 0) return;
+    // if(t == 0) return;
     for(int i = 0; i < 8; ++i) {
         for(int n = 0; n < 8; ++n) {
             u8 row = memReadByte(TILE_BASE + (t * 8) + i);
